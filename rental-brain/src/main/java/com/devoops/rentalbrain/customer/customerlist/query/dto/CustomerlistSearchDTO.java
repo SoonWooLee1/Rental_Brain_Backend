@@ -6,12 +6,12 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CustomerSearchDTO extends Criteria {
+public class CustomerlistSearchDTO extends Criteria {
     private String name;
     private String email;
 
     // 생성자에서 페이지 정보 설정
-    public CustomerSearchDTO(int page, int size) {
+    public CustomerlistSearchDTO(int page, int size) {
         super(page, size);
     }
 }

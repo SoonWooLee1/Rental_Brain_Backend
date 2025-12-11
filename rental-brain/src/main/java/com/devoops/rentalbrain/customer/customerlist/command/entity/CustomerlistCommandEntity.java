@@ -2,7 +2,7 @@ package com.devoops.rentalbrain.customer.customerlist.command.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.DynamicInsert; // 추가됨
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import java.time.LocalDateTime;
 
@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @DynamicUpdate // 변경된 필드만 Update
-@DynamicInsert // [추가] null인 필드는 Insert 구문에서 제외 -> DB Default 값 적용됨
-public class Customer {
+@DynamicInsert // null인 필드는 Insert 구문에서 제외 -> DB Default 값 적용됨
+public class CustomerlistCommandEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

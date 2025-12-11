@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.devoops.rentalbrain.customer.customerlist.query.mapper.CustomerMapper">
+<mapper namespace="com.devoops.rentalbrain.customerlistCommandEntity.customerlist.query.mapper.CustomerMapper">
 
-    <resultMap id="CustomerMap" type="com.devoops.rentalbrain.customer.common.CustomerDto">
+    <resultMap id="CustomerMap" type="com.devoops.rentalbrain.customerlistCommandEntity.common.CustomerDto">
         <id property="id" column="ID"/>
         <result property="name" column="NAME"/>
         <result property="inCharge" column="IN_CHARGE"/>
@@ -40,7 +40,7 @@
            , A.STAR
            , B.NAME AS CHANNEL_NAME
            , C.NAME AS SEGMENT_NAME
-        FROM customer A
+        FROM customerlistCommandEntity A
         LEFT JOIN channel B ON A.CHANNEL_ID = B.ID
         LEFT JOIN segment C ON A.SEGMENT_ID = C.ID
         <where>
@@ -58,7 +58,7 @@
 
     <select id="selectCustomerCount" resultType="long">
         SELECT COUNT(*)
-        FROM customer A
+        FROM customerlistCommandEntity A
         <where>
             AND A.IS_DELETED = 'N'
             <if test="name != null and name != ''">
@@ -87,7 +87,7 @@
            , A.STAR
            , B.NAME AS CHANNEL_NAME
            , C.NAME AS SEGMENT_NAME
-        FROM customer A
+        FROM customerlistCommandEntity A
         LEFT JOIN channel B ON A.CHANNEL_ID = B.ID
         LEFT JOIN segment C ON A.SEGMENT_ID = C.ID
        WHERE A.ID = #{id}
