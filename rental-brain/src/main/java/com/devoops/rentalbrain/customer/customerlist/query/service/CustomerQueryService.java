@@ -1,8 +1,10 @@
 package com.devoops.rentalbrain.customer.customerlist.query.service;
 
-import com.devoops.rentalbrain.common.PageResponse;
+import com.devoops.rentalbrain.common.Pagination.PageResponseDTO;
+import com.devoops.rentalbrain.common.Pagination.Pagination;
+import com.devoops.rentalbrain.common.Pagination.PagingButtonInfo;
 import com.devoops.rentalbrain.customer.common.CustomerDto;
-import com.devoops.rentalbrain.customer.customerlist.query.dto.CustomerSearchDto;
+import com.devoops.rentalbrain.customer.customerlist.query.dto.CustomerSearchDTO;
 import com.devoops.rentalbrain.customer.customerlist.query.mapper.CustomerMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,20 +19,19 @@ public class CustomerQueryService {
     private final CustomerMapper customerMapper;
 
     @Transactional(readOnly = true)
-    public PageResponse<CustomerDto> getCustomerList(String name, String email, int page, int size) {
-        // 검색 조건 DTO 생성 및 값 주입 (PageRequest 필드인 page, size도 함께 설정됨)
-        CustomerSearchDto searchDto = new CustomerSearchDto();
-        searchDto.setName(name);
-        searchDto.setEmail(email);
-        searchDto.setPage(page);
-        searchDto.setSize(size);
+    public PageResponseDTO<CustomerDto> getCustomerListWithPaging(CustomerSearchDTO criteria) {
 
-        // 데이터 조회
-        List<CustomerDto> list = customerMapper.selectCustomerList(searchDto);
-        int totalCount = customerMapper.selectCustomerCount(searchDto);
+        // 1. 데이터 조회 (Mapper 호출)
+        List<CustomerDto> list = customerMapper.selectCustomerList(criteria);
 
-        // 공통 응답 객체 반환 (hasNext 자동 계산)
-        return new PageResponse<>(list, totalCount, searchDto);
+        // 2. 전체 개수 조회
+        long totalCount = customerMapper.selectCustomerCount(criteria);
+
+        // 3. 페이지 버튼 정보 계산 (공통 유틸 사용)
+        PagingButtonInfo paging = Pagination.getPagingButtonInfo(criteria, totalCount);
+
+        // 4. 공통 응답 DTO 반환
+        return new PageResponseDTO<>(list, totalCount, paging);
     }
 
     @Transactional(readOnly = true)

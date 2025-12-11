@@ -4,61 +4,94 @@
 
 <mapper namespace="com.devoops.rentalbrain.customer.customerlist.query.mapper.CustomerMapper">
 
-    <select id="selectCustomerList"
-            parameterType="com.devoops.rentalbrain.customer.customerlist.query.dto.CustomerSearchDto"
-            resultType="com.devoops.rentalbrain.customer.common.dto.CustomerDto">
+    <resultMap id="CustomerMap" type="com.devoops.rentalbrain.customer.common.CustomerDto">
+        <id property="id" column="ID"/>
+        <result property="name" column="NAME"/>
+        <result property="inCharge" column="IN_CHARGE"/>
+        <result property="dept" column="DEPT"/>
+        <result property="callNum" column="CALL_NUM"/>
+        <result property="phone" column="PHONE"/>
+        <result property="email" column="EMAIL"/>
+        <result property="businessNum" column="BUSINESS_NUM"/>
+        <result property="addr" column="ADDR"/>
+        <result property="lastTransaction" column="LAST_TRANSACTION"/>
+        <result property="firstContractDate" column="FIRST_CONTRACT_DATE"/>
+        <result property="memo" column="MEMO"/>
+        <result property="star" column="STAR"/>
+
+        <result property="channelName" column="CHANNEL_NAME"/>
+        <result property="segmentName" column="SEGMENT_NAME"/>
+    </resultMap>
+
+    <select id="selectCustomerList" resultMap="CustomerMap">
         SELECT
-            a.id,
-            a.name,
-            a.in_charge,
-            a.dept,
-            a.call_num,
-            a.phone,
-            a.email,
-            a.business_num,
-            a.addr,
-            a.last_transaction,
-            a.first_contract_date,
-            a.memo,
-            a.star,
-            ch.name AS channelName,
-            s.name AS segmentName
-        FROM customer a
-        LEFT JOIN channel ch ON c.channel_id = ch.id
-        LEFT JOIN segment s ON c.segment_id = s.id
+             A.ID
+           , A.NAME
+           , A.IN_CHARGE
+           , A.DEPT
+           , A.CALL_NUM
+           , A.PHONE
+           , A.EMAIL
+           , A.BUSINESS_NUM
+           , A.ADDR
+           , A.LAST_TRANSACTION
+           , A.FIRST_CONTRACT_DATE
+           , A.MEMO
+           , A.STAR
+           , B.NAME AS CHANNEL_NAME
+           , C.NAME AS SEGMENT_NAME
+        FROM customer A
+        LEFT JOIN channel B ON A.CHANNEL_ID = B.ID
+        LEFT JOIN segment C ON A.SEGMENT_ID = C.ID
         <where>
+            AND A.IS_DELETED = 'N'
             <if test="name != null and name != ''">
-                AND c.name LIKE CONCAT('%', #{name}, '%')
+                AND A.NAME LIKE CONCAT('%', #{name}, '%')
             </if>
             <if test="email != null and email != ''">
-                AND c.email LIKE CONCAT('%', #{email}, '%')
-        <!-- 사용자가 "naver"라고 검색하면 -> ... LIKE '%naver%'가 되어, "abc@naver.com" 등을 모두 찾아줌 -->
+                AND A.EMAIL LIKE CONCAT('%', #{email}, '%')
             </if>
         </where>
-        ORDER BY c.id DESC
+        ORDER BY A.ID DESC
+        LIMIT #{amount} OFFSET #{offset}
     </select>
 
-    <select id="selectCustomerById" resultType="com.devoops.rentalbrain.customer.common.dto.CustomerDto">
+    <select id="selectCustomerCount" resultType="long">
+        SELECT COUNT(*)
+        FROM customer A
+        <where>
+            AND A.IS_DELETED = 'N'
+            <if test="name != null and name != ''">
+                AND A.NAME LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND A.EMAIL LIKE CONCAT('%', #{email}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectCustomerById" resultMap="CustomerMap" parameterType="long">
         SELECT
-            c.id,
-            c.name,
-            c.in_charge,
-            c.dept,
-            c.call_num,
-            c.phone,
-            c.email,
-            c.business_num,
-            c.addr,
-            c.last_transaction,
-            c.first_contract_date,
-            c.memo,
-            c.star,
-            ch.name AS channelName,
-            s.name AS segmentName
-        FROM customer c
-                 LEFT JOIN channel ch ON c.channel_id = ch.id
-                 LEFT JOIN segment s ON c.segment_id = s.id
-        WHERE c.id = #{id}
+             A.ID
+           , A.NAME
+           , A.IN_CHARGE
+           , A.DEPT
+           , A.CALL_NUM
+           , A.PHONE
+           , A.EMAIL
+           , A.BUSINESS_NUM
+           , A.ADDR
+           , A.LAST_TRANSACTION
+           , A.FIRST_CONTRACT_DATE
+           , A.MEMO
+           , A.STAR
+           , B.NAME AS CHANNEL_NAME
+           , C.NAME AS SEGMENT_NAME
+        FROM customer A
+        LEFT JOIN channel B ON A.CHANNEL_ID = B.ID
+        LEFT JOIN segment C ON A.SEGMENT_ID = C.ID
+       WHERE A.ID = #{id}
+         AND A.IS_DELETED = 'N'
     </select>
 
 </mapper>
