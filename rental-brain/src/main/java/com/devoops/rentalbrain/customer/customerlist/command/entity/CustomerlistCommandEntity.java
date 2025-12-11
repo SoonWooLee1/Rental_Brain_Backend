@@ -57,7 +57,7 @@ public class CustomerlistCommandEntity {
     @Column
     private Integer star;
 
-    @Column(name = "is_deleted", nullable = false, length = 1)
+    @Column(name = "is_deleted", length = 1)
     private String isDeleted;
 
     @Column(name = "channel_id", nullable = false)

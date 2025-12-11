@@ -38,4 +38,12 @@ public class CustomerlistCommandController {
         log.info("고객 삭제(Soft Delete) 완료 ID: {}", id);
         return ResponseEntity.ok("삭제되었습니다.");
     }
+
+    // 고객 복구 (Restore)
+    @PutMapping("/restoreCustomer/{id}")
+    public ResponseEntity<String> restore(@PathVariable Long id) {
+        commandService.restoreCustomer(id);
+        log.info("고객 복구 요청 완료 ID: {}", id);
+        return ResponseEntity.ok("고객이 정상적으로 복구되었습니다.");
+    }
 }
