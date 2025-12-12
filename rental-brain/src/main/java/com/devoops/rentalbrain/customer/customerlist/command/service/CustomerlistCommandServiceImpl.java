@@ -1,5 +1,7 @@
 package com.devoops.rentalbrain.customer.customerlist.command.service;
 
+import com.devoops.rentalbrain.common.codegenerator.CodeGenerator;
+import com.devoops.rentalbrain.common.codegenerator.CodeType;
 import com.devoops.rentalbrain.customer.customerlist.command.dto.CustomerlistCommandDTO;
 import com.devoops.rentalbrain.customer.customerlist.command.entity.CustomerlistCommandEntity;
 import com.devoops.rentalbrain.customer.customerlist.command.repository.CustomerlistCommandRepository;
@@ -18,6 +20,12 @@ public class CustomerlistCommandServiceImpl implements CustomerlistCommandServic
 
     private final CustomerlistCommandRepository CustomerlistCommandRepository;
     private final ModelMapper modelMapper;
+
+    private final CodeGenerator codeGenerator; // ✅ 변경: 채번기 주입
+
+    // ✅ 변경: 테이블_code 생성
+    String customerCode = codeGenerator.generate(CodeType.CUSTOMER); // 예: QUO-2025-001
+        CustomerlistCommandDTO.setcustomerCode(customerCode);
 
     // 등록
     @Override

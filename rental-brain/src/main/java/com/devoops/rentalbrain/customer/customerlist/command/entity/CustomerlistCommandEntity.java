@@ -65,4 +65,7 @@ public class CustomerlistCommandEntity {
 
     @Column(name = "segment_id", nullable = false)
     private Long segmentId;
+
+    @Column(name = "customer_code", nullable = false, unique = true)
+    private String customer_code;
 }

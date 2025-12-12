@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 @ToString
 public class CustomerlistCommandDTO {
+    private String customerCode;
     private String name;
     private String inCharge;
     private String dept;
