@@ -43,11 +43,9 @@
                     AND A.is_deleted = 'Y'
                 </when>
             </choose>
-
             <if test="name != null and name != ''">
                 AND (A.name LIKE CONCAT('%', #{name}, '%') OR A.in_charge LIKE CONCAT('%', #{name}, '%'))
             </if>
-
             <if test="segments != null and segments.size > 0">
                 AND C.name IN
                 <foreach item="seg" collection="segments" open="(" separator="," close=")">
@@ -72,11 +70,9 @@
                     AND A.is_deleted = 'Y'
                 </when>
             </choose>
-
             <if test="name != null and name != ''">
                 AND (A.name LIKE CONCAT('%', #{name}, '%') OR A.in_charge LIKE CONCAT('%', #{name}, '%'))
             </if>
-
             <if test="segments != null and segments.size > 0">
                 AND C.name IN
                 <foreach item="seg" collection="segments" open="(" separator="," close=")">
@@ -99,9 +95,15 @@
             A.business_num AS businessNum,
             A.addr,
             A.memo,
-            C.name AS segmentName
+            A.is_deleted AS isDeleted,
+            C.name AS segmentName,
+            B.name AS channelName,
+            (SELECT MIN(start_date) FROM contract WHERE cum_id = A.id) AS firstContractDate,
+            COALESCE((SELECT SUM(total_amount) FROM contract WHERE cum_id = A.id), 0) AS totalTransactionAmount,
+            (SELECT COUNT(*) FROM contract WHERE cum_id = A.id) AS contractCount
         FROM customer A
                  LEFT JOIN segment C ON A.segment_id = C.id
+                 LEFT JOIN channel B ON A.channel_id = B.id
         WHERE A.id = #{id}
     </select>
 
@@ -122,25 +124,164 @@
     </select>
 
     <select id="selectSupportList" resultType="com.devoops.rentalbrain.customer.customersupport.query.dto.CustomersupportDTO">
-        SELECT title, content, status, create_date AS createDate FROM customer_support WHERE cum_id = #{customerId} ORDER BY create_date DESC
-    </select>
-    <select id="selectQuoteList" resultType="com.devoops.rentalbrain.business.quote.query.dto.QuoteQueryResponseDTO">
-        SELECT quote_code AS quoteCode, counseling_date AS counselingDate, counselor, summary FROM quote WHERE cum_id = #{customerId} ORDER BY counseling_date DESC
-    </select>
-    <select id="selectContractList" resultType="com.devoops.rentalbrain.business.contract.query.dto.ContractSummaryDTO">
-        SELECT contract_code AS contractCode, name AS contractName, status, total_amount AS totalAmount, start_date AS startDate FROM contract WHERE cum_id = #{customerId} ORDER BY start_date DESC
-    </select>
-    <select id="selectAsList" resultType="com.devoops.rentalbrain.product.maintenance.query.dto.AfterServiceSummaryDTO">
-        SELECT after_service_code AS asCode, type, status, due_date AS scheduleDate, engineer AS engineerName, contents FROM after_service WHERE cum_id = #{customerId} ORDER BY due_date DESC
-    </select>
-    <select id="selectFeedbackList" resultType="com.devoops.rentalbrain.customer.customersupport.query.dto.FeedbackDTO">
-        SELECT title, star, create_date AS createDate FROM feedback WHERE cum_id = #{customerId} ORDER BY create_date DESC
-    </select>
-    <select id="selectCouponList" resultType="com.devoops.rentalbrain.business.campaign.query.dto.CouponDTO">
-        SELECT C.name, C.status, C.rate FROM issued_coupon IC JOIN coupon C ON IC.coupon_id = C.id WHERE IC.cum_id = #{customerId}
-    </select>
-    <select id="selectPromotionList" resultType="com.devoops.rentalbrain.business.campaign.query.dto.PromotionDTO">
-        SELECT P.name, P.status FROM promotion_log PL JOIN promotion P ON PL.promotion_id = P.id WHERE PL.cum_id = #{customerId}
+        SELECT
+            CS.id,
+            CS.customer_support_code AS customerSupportCode,
+            CS.title,
+            CS.content,
+            CS.status, -- 프론트에서 변환 예정
+            CS.create_date AS createDate,
+            CS.action,
+            SC.name AS categoryName,
+            CH.name AS channelName,
+            E.name AS empName
+        FROM customer_support CS
+                 LEFT JOIN support_category SC ON CS.category_id = SC.id
+                 LEFT JOIN channel CH ON CS.channel_id = CH.id
+                 LEFT JOIN employee E ON CS.emp_id = E.id
+        WHERE CS.cum_id = #{customerId}
+        ORDER BY CS.create_date DESC
     </select>
 
+    <select id="selectQuoteList" resultType="com.devoops.rentalbrain.business.quote.query.dto.QuoteQueryResponseDTO">
+        SELECT
+            Q.id AS quoteId,
+            Q.quote_code AS quoteCode,
+            Q.counseling_date AS quoteCounselingDate,
+            Q.counselor AS quoteCounselor,
+            Q.summary AS quoteSummary,
+            CH.name AS channelName
+        FROM quote Q
+                 LEFT JOIN channel CH ON Q.channel_id = CH.id
+        WHERE Q.cum_id = #{customerId}
+        ORDER BY Q.counseling_date DESC
+    </select>
+
+    <select id="selectContractList" resultType="com.devoops.rentalbrain.business.contract.query.dto.ContractSummaryDTO">
+        SELECT
+            id,
+            contract_code AS contractCode,
+            name AS contractName,
+            status,
+            total_amount AS totalAmount,
+            start_date AS startDate,
+            contract_period AS contractPeriod
+        FROM contract
+        WHERE cum_id = #{customerId}
+        ORDER BY start_date DESC
+    </select>
+
+    <select id="selectAsList" resultType="com.devoops.rentalbrain.product.maintenance.query.dto.AfterServiceSummaryDTO">
+        SELECT
+            A.id,
+            A.after_service_code AS afterServiceCode,
+            A.type,
+            A.status,
+            A.due_date AS scheduleDate,
+            A.engineer AS engineerName,
+            A.contents
+        FROM after_service A
+        WHERE A.cum_id = #{customerId}
+        ORDER BY A.due_date DESC
+    </select>
+
+    <select id="selectFeedbackList" resultType="com.devoops.rentalbrain.customer.customersupport.query.dto.FeedbackDTO">
+        SELECT
+            F.id,
+            F.feedback_code AS feedbackCode,
+            F.title,
+            F.content,
+            F.star,
+            F.create_date AS createDate,
+            F.action,
+            SC.name AS categoryName,
+            CH.name AS channelName,
+            E.name AS empName
+        FROM feedback F
+                 LEFT JOIN support_category SC ON F.category_id = SC.id
+                 LEFT JOIN channel CH ON F.channel_id = CH.id
+                 LEFT JOIN employee E ON F.emp_id = E.id
+        WHERE F.cum_id = #{customerId}
+        ORDER BY F.create_date DESC
+    </select>
+
+    <select id="selectCouponList" resultType="com.devoops.rentalbrain.business.campaign.query.dto.CouponDTO">
+        SELECT
+            C.name,
+            IC.is_used AS status,
+            C.rate,
+            C.coupon_code AS couponCode
+        FROM issued_coupon IC
+                 JOIN coupon C ON IC.coupon_id = C.id
+        WHERE IC.cum_id = #{customerId}
+    </select>
+
+    <select id="selectPromotionList" resultType="com.devoops.rentalbrain.business.campaign.query.dto.PromotionDTO">
+        SELECT
+            P.name,
+            P.status,
+            P.promotion_code AS promotionCode
+        FROM promotion_log PL
+                 JOIN promotion P ON PL.promotion_id = P.id
+        WHERE PL.cum_id = #{customerId}
+    </select>
+
+    <select id="selectSegmentHistory" resultType="com.devoops.rentalbrain.customer.customersegmenthistory.query.dto.HistoryQueryDTO">
+        SELECT
+            H.id,
+            PS.name AS previousSegmentName,
+            CS.name AS currentSegmentName,
+            H.reason,
+            H.trigger_type AS triggerType,
+            H.changed_at AS changedAt
+        FROM customer_segment_history H
+                 LEFT JOIN segment PS ON H.previous_segment_id = PS.id
+                 JOIN segment CS ON H.current_segment_id = CS.id
+        WHERE H.customer_id = #{customerId}
+        ORDER BY H.changed_at DESC
+    </select>
+
+    <select id="CustomerContractList"
+            parameterType="map"
+            resultType="com.devoops.rentalbrain.customer.customerlist.query.dto.CustomerContractDTO">
+
+        SELECT
+        c.id             AS customerId,
+        c.customer_code  AS customerCode,
+        c.name           AS customerName,
+        c.in_charge      AS inCharge,
+        s.name           AS segmentName
+        FROM customer c
+        LEFT JOIN segment s ON c.segment_id = s.id
+        WHERE c.is_deleted = 'N'
+        AND <![CDATA[ c.segment_id <> 6 ]]>
+
+        <if test="criteria.keyword != null and criteria.keyword != ''">
+            AND (
+            c.customer_code LIKE CONCAT('%',#{criteria.keyword},'%')
+            OR c.name LIKE CONCAT('%', #{criteria.keyword}, '%')
+            OR c.in_charge LIKE CONCAT('%', #{criteria.keyword}, '%')
+            )
+        </if>
+
+        ORDER BY c.id DESC
+        LIMIT #{criteria.amount}
+        OFFSET #{criteria.offset}
+    </select>
+    <select id="CustomerContractListCount"
+            parameterType="map"
+            resultType="long">
+
+        SELECT COUNT(*)
+        FROM customer c
+        WHERE c.is_deleted = 'N'
+        AND <![CDATA[ c.segment_id <> 6 ]]>
+
+        <if test="criteria.keyword != null and criteria.keyword != ''">
+            AND (
+            c.name LIKE CONCAT('%', #{criteria.keyword}, '%')
+            OR c.in_charge LIKE CONCAT('%', #{criteria.keyword}, '%')
+            )
+        </if>
+    </select>
 </mapper>

@@ -57,6 +57,16 @@ dependencies {
 
     /* Swagger */
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8'
+
+    /* Quartz */
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+
+    // ▼ MapStruct 추가 (Lombok 보다 아래에 적는 것을 권장)
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // 만약 Lombok도 annotationProcessor를 쓴다면, MapStruct 설정을 추가해야 서로 충돌하지 않습니다.
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 }
 
 tasks.named('test') {
