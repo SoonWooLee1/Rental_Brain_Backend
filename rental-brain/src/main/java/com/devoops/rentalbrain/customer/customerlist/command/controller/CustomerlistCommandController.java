@@ -74,4 +74,16 @@ public class CustomerlistCommandController {
         log.info("고객 복구 요청 완료 ID: {}", id);
         return ResponseEntity.ok("고객이 정상적으로 복구되었습니다.");
     }
+
+    @Operation(summary = "고객 영구 삭제", description = "고객 데이터를 DB에서 완전히 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "복구 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 고객 ID"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    @DeleteMapping("/hard/{id}")
+    public ResponseEntity<String> hardDeleteCustomer(@PathVariable Long id) {
+        commandService.hardDeleteCustomer(id);
+        return ResponseEntity.ok("고객 데이터가 영구 삭제되었습니다.");
+    }
 }
