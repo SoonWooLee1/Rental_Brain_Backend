@@ -100,7 +100,7 @@
                  , D.NAME AS CATEGORY_NAME
                  , E.NAME AS CHANNEL_NAME
             FROM customer_support A
-                     LEFT JOIN customer B ON A.CUM_ID = B.ID
+                     LEFT JOIN customer  B ON A.CUM_ID = B.ID
                      LEFT JOIN employee C ON A.EMP_ID = C.ID
                      LEFT JOIN support_category D ON A.CATEGORY_ID = D.ID
                      LEFT JOIN channel E ON A.CHANNEL_ID = E.ID
