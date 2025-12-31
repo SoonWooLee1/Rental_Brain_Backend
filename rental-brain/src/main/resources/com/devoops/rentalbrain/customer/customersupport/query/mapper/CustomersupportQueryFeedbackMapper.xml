@@ -79,7 +79,7 @@
             </otherwise>
         </choose>
 
-        LIMIT #{offset}, #{size}
+        LIMIT #{offset}, #{amount}
     </select>
 
     <select id="countFeedbackList" resultType="int">

@@ -245,8 +245,20 @@
             SELECT 'AS/점검', contents, due_date, engineer, status FROM after_service WHERE cum_id = #{customerId}
             UNION ALL
             SELECT '피드백', title, create_date, (SELECT name FROM employee WHERE id = emp_id), CAST(star AS CHAR) FROM feedback WHERE cum_id = #{customerId}
+            UNION ALL
+            SELECT
+            '세그먼트' AS type,
+            CONCAT(PS.name, ' -> ', CS.name, ' (', H.reason, ')') AS content,
+            H.changed_at AS date,
+            'System' AS performer,
+            H.trigger_type AS status
+            FROM customer_segment_history H
+            LEFT JOIN segment PS ON H.previous_segment_id = PS.id
+            LEFT JOIN segment CS ON H.current_segment_id = CS.id
+            WHERE H.customer_id = #{customerId}
             ) combined_history
         ORDER BY date DESC
+            LIMIT #{amount} OFFSET #{offset}
     </select>
 
     <select id="selectSupportList" resultMap="SupportListMap">
